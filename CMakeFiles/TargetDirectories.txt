@@ -1,0 +1,3 @@
+/mnt/c/Users/BenHl/Documents/3D-Cellular-Automata/CMakeFiles/3DCA.dir
+/mnt/c/Users/BenHl/Documents/3D-Cellular-Automata/CMakeFiles/edit_cache.dir
+/mnt/c/Users/BenHl/Documents/3D-Cellular-Automata/CMakeFiles/rebuild_cache.dir

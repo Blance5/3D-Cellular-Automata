@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+
+.vscode
+run
+a.out
+.gitignore
+.gitattributes
+build/
