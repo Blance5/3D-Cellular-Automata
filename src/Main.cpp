@@ -23,7 +23,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 980
 
 int main(void)
 {
@@ -42,7 +43,7 @@ int main(void)
     
  
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1200, 980, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -59,10 +60,37 @@ int main(void)
     }
 
     float positions[] = {
-        100.0f, 100.0f, 0.0f, 0.0f, // 0
-        200.0f, 100.0f, 1.0f, 0.0f,// 1
-        200.0f, 200.0f, 1.0f, 1.0f,// 2
-        100.0f, 200.0f, 0.0f, 1.0f// 3
+        -50.0f, -50.0f, 0.0f, 0.0f, // 0
+        50.0f, -50.0f, 1.0f, 0.0f,// 1
+        50.0f, 50.0f, 1.0f, 1.0f,// 2
+        -50.0f, 50.0f, 0.0f, 1.0f// 3
+    };
+
+    float positions2[] = {
+    // positions        
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f
+    };
+
+    unsigned int indices2[] = {
+    0, 1, 2,
+    2, 3, 0,
+    0, 4, 5,
+    5, 1, 0,
+    1, 5, 6,
+    6, 2, 1,
+    2, 6, 7,
+    7, 3, 2,
+    3, 7, 4,
+    4, 0, 3,
+    4, 7, 6,
+    6, 5, 4
     };
 
     // index buffer
@@ -75,25 +103,64 @@ int main(void)
     GLCall(glEnable(GL_BLEND));
 
     VertexArray va;
-    VertexBuffer vb(positions, sizeof(positions));
+    VertexBuffer vb(positions2, sizeof(positions2));
 
 
     //VA 
     VertexBufferLayout layout;
-    layout.Push(2, GL_FLOAT);
-    layout.Push(2, GL_FLOAT);
+    layout.Push(3, GL_FLOAT);
     layout.PrintElements();
     va.AddBuffer(vb, layout);
 
 
     // index buffer object
-    IndexBuffer ib(indicies, sizeof(indicies));
+    IndexBuffer ib(indices2, sizeof(indices2) / sizeof(unsigned int));
 
 
-    glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-    glm::mat4 model;
-    glm::mat4 mvp;
+    // START GLM SHENANIGANS
+
+    // PROJECTION
+    float aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+    float fov = glm::radians(45.0f); // 45 degree field of view
+    
+    glm::mat4 projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
+
+
+
+    // MODEL
+    glm::mat4 model = glm::mat4(1.0f); // identity matrix
+
+
+    // VIEW
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+    
+
+
+    //-----------------
+    glm::vec3 targetPosition(0.5f, 0.5f, 0.5f); // Replace with the actual position of the corner
+    glm::vec3 cameraPosition(0.0f, 0.0f, 0.0f); // Replace with the actual position of the camera
+    // Calculate rotation angles (assume targetPosition is not directly above or below the camera)
+    float horizontalAngle = atan2(targetPosition.y - cameraPosition.y, targetPosition.x - cameraPosition.x);
+    float verticalAngle = atan2(targetPosition.z - cameraPosition.z, sqrt((targetPosition.x - cameraPosition.x) * (targetPosition.x - cameraPosition.x) + (targetPosition.y - cameraPosition.y) * (targetPosition.y - cameraPosition.y)));
+
+    // Apply rotations to the view matrix
+    view = glm::rotate(view, verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate vertically
+    view = glm::rotate(view, horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate horizontally
+    view = glm::translate(view, -cameraPosition); // Translate to camera position
+
+
+
+    // Combine the model, view, and projection matrices
+    glm::mat4 MVP = projection * view * model;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -103,9 +170,9 @@ int main(void)
 
     // tex7.jpg is a good cell texture also try 8
     Texture texture("res/textures/tex3.png");
-    texture.Bind();
+    //texture.Bind();
     // slot 0
-    shader.SetUniform1i("u_Texture", 0);
+    //shader.SetUniform1i("u_Texture", 0);
     
     va.Unbind();
     vb.Unbind();
@@ -125,6 +192,8 @@ int main(void)
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     glm::vec3 translation(200, 200, 0);
+    
+
 
     float r = 0.0f;
     float increment = 0.05f;
@@ -140,14 +209,12 @@ int main(void)
         ImGui::NewFrame();
 
 
-
-        model = glm::translate(glm::mat4(1.0f), translation);
-        // must be in p v m order
-        mvp = proj * view * model;
+        //modelMatrix = glm::translate(glm::mat4(1.0f), translation);
+        //MVP = projectionMatrix * viewMatrix * modelMatrix;
 
         shader.Bind();
         shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
-        shader.SetUniformMat4f("u_MVP", mvp);
+        shader.SetUniformMat4f("u_MVP", MVP);
 
         // DRAW CALL
         renderer.Draw(va, ib, shader);
