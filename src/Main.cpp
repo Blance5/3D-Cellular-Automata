@@ -145,7 +145,7 @@ int main(void)
 
     // Create the view matrix using glm::lookAt
     // Set up view matrix
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraPos = glm::vec3(3.0f, 3.0f, 3.0f);  // Camera positioned at (5, 0, 5)
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Camera looking at the origin
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
