@@ -38,3 +38,6 @@ a.out
 .gitignore
 .gitattributes
 build/
+imgui.ini
+imgui
+imgui.ini

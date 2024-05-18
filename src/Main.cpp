@@ -123,36 +123,41 @@ int main(void)
     float aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
     float fov = glm::radians(45.0f); // 45 degree field of view
     
-    glm::mat4 projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
+    //glm::mat4 projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
 
 
 
     // MODEL
-    glm::mat4 model = glm::mat4(1.0f); // identity matrix
-
+    //glm::mat4 model = glm::mat4(1.0f); // identity matrix
+    glm::mat4 model = glm::mat4(1.0f);
 
     // VIEW
-    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+    //glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
     
 
 
     //-----------------
+    glm::vec3 cameraPosition(0.0f, 0.0f, -3.0f);
+    glm::vec3 upVector(0.0f, 0.0f, 1.0f);
+    // Define the target position (corner of the cube)
     glm::vec3 targetPosition(0.5f, 0.5f, 0.5f); // Replace with the actual position of the corner
-    glm::vec3 cameraPosition(0.0f, 0.0f, 0.0f); // Replace with the actual position of the camera
-    // Calculate rotation angles (assume targetPosition is not directly above or below the camera)
-    float horizontalAngle = atan2(targetPosition.y - cameraPosition.y, targetPosition.x - cameraPosition.x);
-    float verticalAngle = atan2(targetPosition.z - cameraPosition.z, sqrt((targetPosition.x - cameraPosition.x) * (targetPosition.x - cameraPosition.x) + (targetPosition.y - cameraPosition.y) * (targetPosition.y - cameraPosition.y)));
 
-    // Apply rotations to the view matrix
-    view = glm::rotate(view, verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate vertically
-    view = glm::rotate(view, horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate horizontally
-    view = glm::translate(view, -cameraPosition); // Translate to camera position
+
+    // Create the view matrix using glm::lookAt
+    // Set up view matrix
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Camera looking at the origin
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
+    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
+
+
 
 
 
     // Combine the model, view, and projection matrices
-    glm::mat4 MVP = projection * view * model;
-
+    //glm::mat4 MVP = projection * view * model;
+     // adjust screenWidth and screenHeight accordingly
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 
 
 
@@ -207,6 +212,14 @@ int main(void)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        // Update model matrix for rotation
+        static float angle = 0.0f;
+        angle += 0.1f; // Adjust the rotation speed as needed
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
+
+        // Set up transformation matrix and pass it to the shader
+        glm::mat4 MVP = projection * view * model; // Assuming you have projection and view matrices set up
 
 
         //modelMatrix = glm::translate(glm::mat4(1.0f), translation);
