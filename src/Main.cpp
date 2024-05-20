@@ -66,19 +66,48 @@ int main(void)
         -50.0f, 50.0f, 0.0f, 1.0f// 3
     };
 
-    float positions2[] = {
-    // positions        
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f
-    };
 
-    unsigned int indices2[] = {
+
+    /*
+
+    CURRENT PLAN:
+    store vertex buffer in a vector of vec3s, also maintain a vector of positions that contains same data
+    as vec3 vector
+    maintain a vector of indices that contains vec3s to draw
+
+    */
+
+
+
+
+
+
+
+    /*float positions2[] = {
+    // positions        
+    -0.5f, -0.5f, -0.5f, // back face
+     0.5f, -0.5f, -0.5f, //  bf
+     0.5f,  0.5f, -0.5f, // bf
+    -0.5f,  0.5f, -0.5f, // 
+    -0.5f, -0.5f,  0.5f, // 
+     0.5f, -0.5f,  0.5f, // 
+     0.5f,  0.5f,  0.5f, // 
+    -0.5f,  0.5f,  0.5f //
+    };*/
+
+    float vertexData[] = {
+    // positions         // normals
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // back face
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, //  bf
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // bf
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // 
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // 
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // 
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // 
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f  //
+};
+
+    /*unsigned int indices2[] = {
     0, 1, 2,
     2, 3, 0,
     0, 4, 5,
@@ -91,7 +120,272 @@ int main(void)
     4, 0, 3,
     4, 7, 6,
     6, 5, 4
+    };*/
+
+    
+
+    /*unsigned int indices2[] = {
+    // back face
+    0, 1, 2,
+    2, 3, 0,
+    // front face
+    4, 5, 6,
+    6, 7, 4,
+    // top face
+    0, 4, 5,
+    5, 1, 0,
+    // bottom face
+    2, 6, 7,
+    7, 3, 2,
+    // left face
+    0, 2, 6,
+    6, 4, 0,
+    // right face
+    1, 5, 7,
+    7, 3, 1
+};*/
+
+/*unsigned int indices2[] = {
+    // back face
+    0, 1, 2,
+    2, 3, 0,
+    // front face
+    4, 5, 6,
+    6, 7, 4,
+    // top face
+    8, 9, 10,
+    10, 11, 8,
+    // bottom face
+    12, 13, 14,
+    14, 15, 12,
+    // left face
+    16, 17, 18,
+    18, 19, 16,
+    // right face
+    20, 21, 22,
+    22, 23, 20
+};*/
+/*unsigned int indices2[] = {
+    // back face
+    0, 1, 2,
+    2, 3, 0,
+    // front face
+    4, 5, 6,
+    6, 7, 4,
+    // left face
+    8, 9, 10,
+    10, 11, 8,
+    // right face
+    12, 13, 14,
+    14, 15, 12,
+    // bottom face
+    16, 17, 18,
+    18, 19, 16,
+    // top face
+    20, 21, 22,
+    22, 23, 20
+};*/
+
+    /*unsigned int indices2[] = {
+    // front face
+    0, 1, 2, 0, 2, 3,
+    // back face
+    4, 5, 6, 4, 6, 7,
+    // left face
+    8, 9, 10, 8, 10, 11,
+    // right face
+    12, 13, 14, 12, 14, 15,
+    // bottom face
+    16, 17, 18, 16, 18, 19,
+    // top face
+    20, 21, 22, 20, 22, 23
+};*/
+
+    glm::vec3 positions2vec3[] = {
+        glm::vec3(-0.5, -0.5, -0.5),
+        glm::vec3(0.5, -0.5, -0.5),
+        glm::vec3(0.5, 0.5, -0.5),
+        glm::vec3(-0.5, 0.5, -0.5),
+        glm::vec3(-0.5, -0.5, 0.5),
+        glm::vec3(0.5, -0.5, 0.5),
+        glm::vec3(0.5, 0.5, 0.5),
+        glm::vec3(-0.5, 0.5, 0.5)
     };
+    
+
+    glm::vec3 normalsvec3[12];
+
+    // loop through every triangle
+    /*for (int i = 0; i < 12 * 3; i+= 3) {
+        glm::vec3 vertex1 = positions2vec3[indices2[i]];
+        glm::vec3 vertex2 = positions2vec3[indices2[i + 1]];
+        glm::vec3 vertex3 = positions2vec3[indices2[i + 2]];
+
+        glm::vec3 edge1 = vertex2 - vertex1;
+        glm::vec3 edge2 = vertex3 - vertex1;
+        glm::vec3 norm = glm::cross(edge1, edge2);
+        norm = glm::normalize(norm);
+
+        normalsvec3[i] = norm;
+        normalsvec3[i + 1] = norm;
+        normalsvec3[i + 2] = norm;
+    }*/
+
+    /*float normals[36 * 3];
+
+    for (int i = 0; i < 36; i++) {
+        normals[i * 3] = normalsvec3[i].x;
+        normals[i * 3 + 1] = normalsvec3[i].y;
+        normals[i * 3 + 2] = normalsvec3[i].z;
+    }*/
+
+    /*float normals[] = {
+    // front face normals
+    0.0f,  0.0f, -1.0f,
+    0.0f,  0.0f, -1.0f,
+    0.0f,  0.0f, -1.0f,
+    0.0f,  0.0f, -1.0f,
+    // back face normals
+    0.0f,  0.0f,  1.0f,
+    0.0f,  0.0f,  1.0f,
+    0.0f,  0.0f,  1.0f,
+    0.0f,  0.0f,  1.0f,
+    // left face normals
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    -1.0f,  0.0f,  0.0f,
+    // right face normals
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    1.0f,  0.0f,  0.0f,
+    // bottom face normals
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    0.0f, -1.0f,  0.0f,
+    // top face normals
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f,
+    0.0f,  1.0f,  0.0f
+};*/
+
+    //int numActiveCubes = 2;
+
+   /*float normals[] = {
+        // normals
+        -0.5773502691896257f, -0.5773502691896257f, -0.5773502691896257f,
+        0.5773502691896257f, -0.5773502691896257f, -0.5773502691896257f,
+        0.5773502691896257f,  0.5773502691896257f, -0.5773502691896257f,
+        -0.5773502691896257f,  0.5773502691896257f, -0.5773502691896257f,
+        -0.5773502691896257f, -0.5773502691896257f,  0.5773502691896257f,
+        0.5773502691896257f, -0.5773502691896257f,  0.5773502691896257f,
+        0.5773502691896257f,  0.5773502691896257f,  0.5773502691896257f,
+        -0.5773502691896257f,  0.5773502691896257f,  0.5773502691896257f
+    };*/
+   /* std::vector<float> verticesVec;
+    // initialize all possible verticies
+    for (int i = 0; i < numActiveCubes; i++) {
+        for (int j = 0; j < 24; j++) {
+            verticesVec.push_back(vertexData[j]);
+        }
+    }*/
+    
+    float vertices[] = {
+    // First Cube
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+
+    // Second Cube (translated +3 units in x direction)
+     2.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     3.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+     3.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+     2.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    
+     2.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+     3.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+     3.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 
+     2.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+
+     2.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+     2.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+     2.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 
+     2.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+     3.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     3.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     3.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     3.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+     3.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     3.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+     2.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+     2.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+     2.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     3.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     3.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+     2.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+};
+
+
+
+    unsigned int indices2[] = {
+        0, 1, 2, 0, 2, 3,
+        4, 5, 6, 4, 6, 7,
+        8, 9, 10, 8, 10, 11,
+        12, 13, 14, 12, 14, 15,
+        16, 17, 18, 16, 18, 19,
+        20, 21, 22, 20, 22, 23,
+
+        24, 25, 26, 24, 26, 27,
+        28, 29, 30, 28, 30, 31,
+        32, 33, 34, 32, 34, 35,
+        36, 37, 38, 36, 38, 39,
+        40, 41, 42, 40, 42, 43,
+        44, 45, 46, 44, 46, 47
+    };
+
+    //unsigned int * indicies2 = new unsigned int[36 * numActiveCubes];
+
+    /*for (int i = 0 ; i < numActiveCubes; i++) {
+        for (int j = 0; j < 36; j++) {
+            indices2[j + i * 36] += i * 24;
+        }
+    }*/
+
+
+
+    
 
     // index buffer
     unsigned int indicies[] {
@@ -101,21 +395,40 @@ int main(void)
 
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     GLCall(glEnable(GL_BLEND));
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    //GLCall(glEnable(GL_DEPTH_TEST)); // Enable depth testing
+    for (int i = 0; i < 36 * 3; i++) {
+        //std::cout << normals[i] << std::endl;
+    }
 
     VertexArray va;
-    VertexBuffer vb(positions2, sizeof(positions2));
+    VertexArray va2;
+    VertexBuffer vb(vertices, sizeof(vertices));
+    //VertexBuffer nb(normals, sizeof(normals));
 
 
     //VA 
     VertexBufferLayout layout;
     layout.Push(3, GL_FLOAT);
-    layout.PrintElements();
+    layout.Push(3, GL_FLOAT);
     va.AddBuffer(vb, layout);
 
+    /*va.Bind();
+    vb.Bind();
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *)3);*/
+    
+
+    //VertexBufferLayout layout2;
+    //layout.Push(3, GL_FLOAT);
+    //layout2.SetAttribLocation(1, "normal");
+    //va.AddBuffer(nb, layout); 
 
     // index buffer object
     IndexBuffer ib(indices2, sizeof(indices2) / sizeof(unsigned int));
-
 
     // START GLM SHENANIGANS
 
@@ -136,20 +449,15 @@ int main(void)
     
 
 
-    //-----------------
-    glm::vec3 cameraPosition(0.0f, 0.0f, -3.0f);
-    glm::vec3 upVector(0.0f, 0.0f, 1.0f);
-    // Define the target position (corner of the cube)
-    glm::vec3 targetPosition(0.5f, 0.5f, 0.5f); // Replace with the actual position of the corner
 
 
     // Create the view matrix using glm::lookAt
     // Set up view matrix
-    glm::vec3 cameraPos = glm::vec3(3.0f, 3.0f, 3.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraPos(3.0f, 3.0f, 3.0f);  // Camera positioned at (5, 0, 5)
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); // Camera looking at the origin
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
-
+    
 
 
 
@@ -179,6 +487,11 @@ int main(void)
     // slot 0
     //shader.SetUniform1i("u_Texture", 0);
     
+    // Set light position and color through uniforms
+    shader.SetUniform3f("u_LightPosition", 2.0f, 5.0f, 10.0f);
+    shader.SetUniform3f("u_LightColor", 1.0f, 1.0f, 1.0f);
+    shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
+    
     va.Unbind();
     vb.Unbind();
     ib.Unbind();
@@ -196,7 +509,6 @@ int main(void)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    glm::vec3 translation(200, 200, 0);
     
 
 
@@ -215,7 +527,7 @@ int main(void)
 
         // Update model matrix for rotation
         static float angle = 0.0f;
-        angle += 0.1f; // Adjust the rotation speed as needed
+        //angle += 0.1f; // Adjust the rotation speed as needed
         glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
 
         // Set up transformation matrix and pass it to the shader
@@ -226,8 +538,9 @@ int main(void)
         //MVP = projectionMatrix * viewMatrix * modelMatrix;
 
         shader.Bind();
-        shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
+        shader.SetUniform4f("u_Color", 0.6, 0.3f, 0.8f, 1.0f);
         shader.SetUniformMat4f("u_MVP", MVP);
+        view = glm::lookAt(cameraPos, cameraTarget, up);  // Camera positioned at (5, 0, 5)
 
         // DRAW CALL
         renderer.Draw(va, ib, shader);
@@ -237,7 +550,9 @@ int main(void)
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         static float f = 0.0f;
         ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-        ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat3("Translation", &cameraPos.x, -10.0f, 10.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        //ImGui::SliderFloat3("Translationy", &translation.y, -10.0f, 10.0f); 
+        //ImGui::SliderFloat3("Translationz", &translation.z, -10.0f, 10.0f); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
 
