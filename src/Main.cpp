@@ -6,7 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include <ctime>
+#include <chrono>
 
 
 #include "Renderer.h"
@@ -25,58 +25,60 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-//#define SCREEN_WIDTH 1200
-//#define SCREEN_HEIGHT 980
-
-#define SCREEN_WIDTH 1910
-#define SCREEN_HEIGHT 1170
-
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 980
 
 #define MAXROWS 100
 #define MAXCOLS 100
 #define MAXLAYERS 100
 
-#define a1 6
-#define a2 7
-#define a3 8
-#define b1 6
-#define b2 7
-#define b3 8
+#define ALIVEREQ 9
+#define BIRTHREQ 4
 
 
 // low = 10, high ~= 150
-#define RENDERSPEED 50
+
 
 void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, std::vector<std::vector<std::vector<Cube>>> allCubeVertices, unsigned int baseIndices[]) {
+    auto start = std::chrono::high_resolution_clock::now();
     indices.clear();
     aliveCubesVertices.clear();
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
                 if (allCubeVertices[i][j][k].aliveStatus() != 0) {
+                    
                     for (int l = 0; l < 24; l++) {
+                        
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].x);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].y);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].z);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].x);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].y);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].z);
-                        aliveCubesVertices.push_back(0.5f);
+                        aliveCubesVertices.push_back(0.4f);
                         //aliveCubesVertices.push_back(1.0f);
                         aliveCubesVertices.push_back(1 - (allCubeVertices[i][j][k].aliveStatus() * 1.0f / TOTALSTATES));
-                        aliveCubesVertices.push_back(0.8f);
+                        aliveCubesVertices.push_back(0.84f);
+                        
                     }
+                    
                 }
             }
         }
     }
-
+    
+    
     // get indcies of aliveCube - iterate every cube
     for (int i = 0; i < aliveCubesVertices.size() / (24 * 9); i++) {
         for (int j = 0; j < 36; j++) {
             indices.push_back(baseIndices[j] + (i * 24)); 
         }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+    std::cout << "c1 : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
 }
 
 void calculateNeighbors(std::vector<std::vector<std::vector<Cube>>> allCubeVertices, int *** neighborMap) {
@@ -121,16 +123,14 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
     calculateNeighbors(allCubeVertices, neighborMap);
 
     
-    std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
+    /*std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][1 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][0 + 50][1 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][1 + 50][1 + 50] << std::endl;
     std::cout << neighborMap[2 + 50][0 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[2 + 50][1 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[2 + 50][0 + 50][1 + 50] << std::endl;
-    std::cout << neighborMap[2 + 50][1 + 50][1 + 50] << std::endl;
-
-    
+    std::cout << neighborMap[2 + 50][1 + 50][1 + 50] << std::endl;*/
     
     // create 3d array representing future alive status of each cube
     int*** futureMap = new int**[MAXLAYERS];
@@ -148,13 +148,13 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
                 if (allCubeVertices[i][j][k].aliveStatus() > 1) {
                     futureMap[i][j][k] = allCubeVertices[i][j][k].aliveStatus() + 1;
                 } else if (allCubeVertices[i][j][k].aliveStatus() == 1) {
-                    if (neighborCount == a1 || neighborCount == a2 || neighborCount == a3) {
+                    if (neighborCount == ALIVEREQ) {
                         futureMap[i][j][k] = 1;
                     } else {
                         futureMap[i][j][k] = 2;
                     }
                 } else {
-                    if (neighborCount == b1 || neighborCount == b2 || neighborCount == b3) {
+                    if (neighborCount == BIRTHREQ) {
                         futureMap[i][j][k] = 1;
                     } else {
                         futureMap[i][j][k] = 0;
@@ -176,38 +176,6 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
             }
         }
     }
-
-    for (int i = 0; i < MAXLAYERS; ++i) {
-        for (int j = 0; j < MAXROWS; ++j) {
-            delete[] neighborMap[i][j]; // Delete each int[MAXCOLS] array
-        }
-        delete[] neighborMap[i]; // Delete each int*[MAXROWS] array
-    }
-    delete[] neighborMap; // Delete the int**[MAXLAYERS] array
-
-    for (int i = 0; i < MAXLAYERS; ++i) {
-        for (int j = 0; j < MAXROWS; ++j) {
-            delete[] futureMap[i][j]; // Delete each int[MAXCOLS] array
-        }
-        delete[] futureMap[i]; // Delete each int*[MAXROWS] array
-    }
-    delete[] futureMap; // Delete the int**[MAXLAYERS] array
-}
-
-void initRandomVertices(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices, int x, int y, int z) {
-    std::srand(std::time(nullptr));
-    int random_value = std::rand();
-    for (int i = 50 - x; i < 50 + x; i++) {
-        for (int j = 50 - y; j < 50 + y; j++) {
-            for (int k = 50 - z; k < 50 + z; k++) {
-                if (random_value % 5 == 0) {
-                    allCubeVertices[i][j][k].setAliveStatus(1);
-                }
-                random_value = std::rand();
-            }
-        }
-    }
-
 }
 
 int main(void)
@@ -227,7 +195,7 @@ int main(void)
     
  
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "3 Dimensional Cellular Automata", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cellular Automata in 3 Dimensions", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -277,18 +245,6 @@ int main(void)
     allCubeVertices[2 + 50][1 + 50][0 + 50].setAliveStatus(1);
     allCubeVertices[2 + 50][0 + 50][1 + 50].setAliveStatus(1);
     allCubeVertices[2 + 50][1 + 50][1 + 50].setAliveStatus(1);
-
-    allCubeVertices[4 + 50][0 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[4 + 50][1 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[4 + 50][0 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[4 + 50][1 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[-2 + 50][0 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[-2 + 50][1 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[-2 + 50][0 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[-2 + 50][1 + 50][1 + 50].setAliveStatus(1);
-
-    initRandomVertices(allCubeVertices, 10, 10, 10);
-    
     std::vector<float> aliveCubesVertices;
 
     // STEPS TO DRAW
@@ -298,7 +254,38 @@ int main(void)
     // 4. copy vectors to arrays
     // 5. create new va, vb, ib
 
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                if (allCubeVertices[i][j][k].aliveStatus() != 0) {
+                    for (int l = 0; l < 24; l++) {
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].x);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].y);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].z);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].x);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].y);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].z);
+                    }
+                }
+            }
+        }
+    }
+
     
+    
+
+
+    // get indcies of aliveCube - iterate every cube
+    for (int i = 0; i < aliveCubesVertices.size() / (24 * 6); i++) {
+        for (int j = 0; j < 36; j++) {
+            indices.push_back(baseIndices[j] + (i * 24)); 
+        }
+    }
+    
+    float * finalVertices = new float[aliveCubesVertices.size()];
+    unsigned int * finalIndices = new unsigned int[indices.size()];
+    std::copy(indices.begin(), indices.end(), finalIndices);
+    std::copy(aliveCubesVertices.begin(), aliveCubesVertices.end(), finalVertices);
 
 
     
@@ -319,6 +306,7 @@ int main(void)
     glDepthFunc(GL_LESS);
 
     VertexArray va;
+    VertexBuffer vb(finalVertices, sizeof(float) * aliveCubesVertices.size());
     //VertexBuffer nb(normals, sizeof(normals));
 
 
@@ -327,6 +315,7 @@ int main(void)
     layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
+    va.AddBuffer(vb, layout);
 
     /*va.Bind();
     vb.Bind();
@@ -342,7 +331,7 @@ int main(void)
     //va.AddBuffer(nb, layout); 
 
     // index buffer object
-    
+    IndexBuffer ib(finalIndices, indices.size());
 
     // START GLM SHENANIGANS
 
@@ -379,7 +368,7 @@ int main(void)
     // Combine the model, view, and projection matrices
     //glm::mat4 MVP = projection * view * model;
      // adjust screenWidth and screenHeight accordingly
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.01f, 200.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 200.0f);
 
 
 
@@ -405,9 +394,11 @@ int main(void)
     shader.SetUniform3f("u_LightPosition", 100.0f, 100.0f, 50.0f);
     shader.SetUniform3f("u_LightColor", 1.0f, 1.0f, 1.0f);
     shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
-
     
-   
+    
+    va.Unbind();
+    vb.Unbind();
+    ib.Unbind();
     shader.Unbind();
 
     Renderer renderer;
@@ -428,12 +419,12 @@ int main(void)
     float r = 0.0f;
     float increment = 0.05f;
     int count = 0;
-    float angle = 0.0f;
-    /* Loop until the user closes the window */
 
-    float * finalVertices;
-    unsigned int * finalIndices;
-    
+    auto start = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+    /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
@@ -447,13 +438,24 @@ int main(void)
 
 
         // cube calculations
-        if (count % (15000 / 4) == 0) {
+        if (count % 150 == 0) {
+            start = std::chrono::high_resolution_clock::now();
+
             // get usable buffers from allCubeVertices and alive status
             calcBuffers(aliveCubesVertices, indices, allCubeVertices, baseIndices);
-            // calculate alive status
+            end = std::chrono::high_resolution_clock::now();
+            elapsed_seconds = end - start;
+            elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+            std::cout << "Elapsed time1: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+
+
+            start = std::chrono::high_resolution_clock::now();
             updateCubes(allCubeVertices);
+            end = std::chrono::high_resolution_clock::now();
+            elapsed_seconds = end - start;
+            elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+            //std::cout << "Elapsed time2: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
         }
-        
         finalVertices = new float[aliveCubesVertices.size()];
         finalIndices = new unsigned int[indices.size()];
         std::copy(indices.begin(), indices.end(), finalIndices);
@@ -465,7 +467,7 @@ int main(void)
 
 
         // Update model matrix for rotation
-        
+        static float angle = 0.0f;
 
         glm::vec3 modelCenter(50.0f, 50.0f, 50.0f); // Center of the model
 
@@ -481,14 +483,14 @@ int main(void)
         // Combine the transformations
         glm::mat4 model = translateBack * rotate * translateToOrigin;
         // % n is 10,000x angle
-        angle += 0.004; // Adjust the rotation speed as needed
+        angle += 0.2; // Adjust the rotation speed as needed
         //glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
 
         shader.Bind();
-        
+        shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
         //cameraPos = glm::vec3(60.0f + angle / 12, 60.0f + angle / 15, 60.0f);  // Camera positioned at (5, 0, 5)
-        //view = glm::lookAt(cameraPos, cameraTarget, up);
-        view = glm::lookAt(cameraPos, cameraTarget, up); 
+        view = glm::lookAt(cameraPos, cameraTarget, up);
+
 
         // Set up transformation matrix and pass it to the shader
         glm::mat4 MVP = projection * view * model; // Assuming you have projection and view matrices set up
@@ -500,19 +502,22 @@ int main(void)
         
         shader.SetUniform4f("u_Color", 0.6, 0.3f, 0.8f, 1.0f);
         shader.SetUniformMat4f("u_MVP", MVP);
+        view = glm::lookAt(cameraPos, cameraTarget, up);  // Camera positioned at (5, 0, 5)
         
-
         // DRAW CALL
         renderer.Draw(va, ib, shader);
 
+        
+        
+
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         static float f = 0.0f;
-        /*ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
         ImGui::SliderFloat3("Translation", &cameraPos.x, -100.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         //ImGui::SliderFloat3("Translationy", &translation.y, -10.0f, 10.0f); 
         //ImGui::SliderFloat3("Translationz", &translation.z, -10.0f, 10.0f); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::End();*/
+        ImGui::End();
 
 
         /*GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
@@ -541,8 +546,9 @@ int main(void)
         GLCall(glfwSwapBuffers(window));
 
         count++;
-        delete[] finalVertices; // Free the memory allocated for the float array
-        delete[] finalIndices;  // Free the memory allocated for the unsigned int array
+        delete finalVertices;
+        delete finalIndices;
+
         /* Poll for and process events */
         GLCall(glfwPollEvents());
     }
