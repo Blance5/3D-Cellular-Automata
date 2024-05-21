@@ -227,7 +227,7 @@ int main(void)
     
  
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "3 Dimensional Cellular Automata", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
