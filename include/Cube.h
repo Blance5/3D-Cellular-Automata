@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#define TOTALSTATES 5
+#define TOTALSTATES 3
 
 struct Point {
     float x;
