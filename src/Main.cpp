@@ -32,8 +32,11 @@
 #define MAXLAYERS 100
 
 #define ALIVEREQ 4
-#define BIRTHREQ 4
-#define TOTALSTATES 5
+#define BIRTHREQ 2
+
+
+// low = 10, high ~= 150
+#define RENDERSPEED 50
 
 void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, std::vector<std::vector<std::vector<Cube>>> allCubeVertices, unsigned int baseIndices[]) {
     indices.clear();
@@ -49,6 +52,10 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].x);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].y);
                         aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].z);
+                        aliveCubesVertices.push_back(0.88f);
+                        //aliveCubesVertices.push_back(1.0f);
+                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].aliveStatus() * 1.0f / TOTALSTATES);
+                        aliveCubesVertices.push_back(0.88f);
                     }
                 }
             }
@@ -56,7 +63,7 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
     }
 
     // get indcies of aliveCube - iterate every cube
-    for (int i = 0; i < aliveCubesVertices.size() / (24 * 6); i++) {
+    for (int i = 0; i < aliveCubesVertices.size() / (24 * 9); i++) {
         for (int j = 0; j < 36; j++) {
             indices.push_back(baseIndices[j] + (i * 24)); 
         }
@@ -104,7 +111,7 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
 
     calculateNeighbors(allCubeVertices, neighborMap);
 
-    /*
+    
     std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][1 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][0 + 50][1 + 50] << std::endl;
@@ -113,7 +120,7 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
     std::cout << neighborMap[2 + 50][1 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[2 + 50][0 + 50][1 + 50] << std::endl;
     std::cout << neighborMap[2 + 50][1 + 50][1 + 50] << std::endl;
-    */
+    
     // create 3d array representing future alive status of each cube
     int*** futureMap = new int**[MAXLAYERS];
     for (int i = 0; i < MAXLAYERS; ++i) {
@@ -143,7 +150,7 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
                     }
                 }
 
-                if (futureMap[i][j][k] >= TOTALSTATES - 1) {
+                if (futureMap[i][j][k] >= TOTALSTATES) {
                     futureMap[i][j][k] = 0;
                 }
             }
@@ -286,10 +293,6 @@ int main(void)
     GLCall(glEnable(GL_BLEND));
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    //GLCall(glEnable(GL_DEPTH_TEST)); // Enable depth testing
-    for (int i = 0; i < 36 * 3; i++) {
-        //std::cout << normals[i] << std::endl;
-    }
 
     VertexArray va;
     VertexBuffer vb(finalVertices, sizeof(float) * aliveCubesVertices.size());
@@ -298,6 +301,7 @@ int main(void)
 
     //VA 
     VertexBufferLayout layout;
+    layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
     va.AddBuffer(vb, layout);
@@ -341,7 +345,7 @@ int main(void)
 
     // Create the view matrix using glm::lookAt
     // Set up view matrix
-    glm::vec3 cameraPos(36.0f, 86.0f, 0.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraPos(60.0f, 60.0f, 60.0f);  // Camera positioned at (5, 0, 5)
     glm::vec3 cameraTarget = glm::vec3(50.0f, 50.0f, 50.0f); // Camera looking at the origin
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
@@ -380,6 +384,7 @@ int main(void)
     shader.SetUniform3f("u_LightColor", 1.0f, 1.0f, 1.0f);
     shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
     
+    
     va.Unbind();
     vb.Unbind();
     ib.Unbind();
@@ -417,7 +422,7 @@ int main(void)
 
 
         // cube calculations
-        if (count % 1800 == 0) {
+        if (count % 150 == 0) {
             // get usable buffers from allCubeVertices and alive status
             calcBuffers(aliveCubesVertices, indices, allCubeVertices, baseIndices);
             // calculate alive status
@@ -450,8 +455,15 @@ int main(void)
 
         // Combine the transformations
         glm::mat4 model = translateBack * rotate * translateToOrigin;
-        angle += 0.01f; // Adjust the rotation speed as needed
+        // % n is 10,000x angle
+        angle += 0.2; // Adjust the rotation speed as needed
         //glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
+
+        shader.Bind();
+        shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
+        cameraPos = glm::vec3(60.0f + angle / 12, 60.0f + angle / 15, 60.0f);  // Camera positioned at (5, 0, 5)
+        view = glm::lookAt(cameraPos, cameraTarget, up);
+
 
         // Set up transformation matrix and pass it to the shader
         glm::mat4 MVP = projection * view * model; // Assuming you have projection and view matrices set up
@@ -460,7 +472,7 @@ int main(void)
         //modelMatrix = glm::translate(glm::mat4(1.0f), translation);
         //MVP = projectionMatrix * viewMatrix * modelMatrix;
 
-        shader.Bind();
+        
         shader.SetUniform4f("u_Color", 0.6, 0.3f, 0.8f, 1.0f);
         shader.SetUniformMat4f("u_MVP", MVP);
         view = glm::lookAt(cameraPos, cameraTarget, up);  // Camera positioned at (5, 0, 5)

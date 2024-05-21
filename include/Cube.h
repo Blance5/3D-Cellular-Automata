@@ -1,6 +1,9 @@
 #pragma once
 
+
 #include <vector>
+
+#define TOTALSTATES 5
 
 struct Point {
     float x;
@@ -18,7 +21,7 @@ class Cube {
 public:
     
 
-    bool aliveStatus() {
+    int aliveStatus() {
         return alive;
     }
 
@@ -40,6 +43,12 @@ public:
             n.push_back(normals[i]);
         }
         return n;
+    }
+
+    void setColor() {
+        color[0] = 0.88f;
+        color[1] = 1.0f * (alive * 1.0f / TOTALSTATES);
+        color[2] = 0.88f;
     }
     
     /*
@@ -149,4 +158,5 @@ private:
     Point points[24];
     Normal normals[24];
     int alive;
+    int color[3];
 };

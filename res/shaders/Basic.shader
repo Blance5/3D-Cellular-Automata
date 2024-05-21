@@ -4,10 +4,12 @@
 layout(location = 0) in vec4 position;
 //layout(location = 1) in vec2 texCoord;
 layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 color2;
 
 //out vec2 v_TexCoord;
 out vec3 v_Normal;
 out vec3 v_Position;
+out vec3 v_Color2;
 
 uniform mat4 u_MVP;
 
@@ -17,6 +19,7 @@ void main()
     gl_Position = u_MVP * position;
     v_Normal = normal; // pass normal to fragment shader
     v_Position = position.xyz; // pass position to fragment shader
+    v_Color2 = color2;
 };
 
 
@@ -29,6 +32,7 @@ layout(location = 0) out vec4 color;
 //in vec2 v_TexCoord;
 in vec3 v_Normal; // added input variable for normal
 in vec3 v_Position; // added input variable for position
+in vec3 v_Color2;
 
 uniform vec4 u_Color;
 //uniform sampler2D u_Texture;
@@ -60,6 +64,6 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1);
     vec3 specular = specularStrength * spec * u_LightColor;  
         
-    vec3 result = (ambient + diffuse + specular) * u_Color.xyz;
+    vec3 result = (ambient + diffuse + specular) * v_Color2.xyz;
     color = vec4(result, 1.0);
 };
