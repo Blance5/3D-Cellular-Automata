@@ -54,10 +54,10 @@ void main()
     vec3 diffuse = diff * u_LightColor;
     
     // specular
-    float specularStrength = 0.5f;
+    float specularStrength = 1.0f;
     vec3 viewDir = normalize(viewPos - v_Position);
     vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1);
     vec3 specular = specularStrength * spec * u_LightColor;  
         
     vec3 result = (ambient + diffuse + specular) * u_Color.xyz;
