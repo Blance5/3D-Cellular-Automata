@@ -31,6 +31,10 @@
 #define MAXCOLS 100
 #define MAXLAYERS 100
 
+#define ALIVEREQ 4
+#define BIRTHREQ 4
+#define TOTALSTATES 5
+
 void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, std::vector<std::vector<std::vector<Cube>>> allCubeVertices, unsigned int baseIndices[]) {
     indices.clear();
     aliveCubesVertices.clear();
@@ -59,10 +63,101 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
     }
 }
 
-void updateCubes() {
-    // for each cube get amount of alive neighbors
-    
-    // 
+void calculateNeighbors(std::vector<std::vector<std::vector<Cube>>> allCubeVertices, int *** neighborMap) {
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                int neighbors = 0;
+                for (int l = -1; l < 2; l++) {
+                    for (int m = -1; m < 2; m++) {
+                        for (int n = -1; n < 2; n++) {
+                            if (l == 0 && m == 0 && n == 0) {
+                                continue;
+                            }
+                            if (i + l < 0 || i + l >= MAXROWS || j + m < 0 || j + m >= MAXCOLS || k + n < 0 || k + n >= MAXLAYERS) {
+                                continue;
+                            }
+
+                            // only neighbors with an alive status of 1 are counted
+                            // CAN CHANGE THIS TO MODIFY BEHAVIOR AKA COUNT ALL DYING CELLS AS WELL
+                            if (allCubeVertices[i + l][j + m][k + n].aliveStatus() == 1) {
+                                neighbors++;
+                            }
+                        }
+                    }
+                }
+                neighborMap[i][j][k] = neighbors;
+            }
+        }
+    }
+}
+
+void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) {
+    // for each cube get amount of alive neighbors - Create neighbormap
+    int*** neighborMap = new int**[MAXLAYERS];
+    for (int i = 0; i < MAXLAYERS; ++i) {
+        neighborMap[i] = new int*[MAXROWS];
+        for (int j = 0; j < MAXROWS; ++j) {
+            neighborMap[i][j] = new int[MAXCOLS];
+        }
+    }
+
+    calculateNeighbors(allCubeVertices, neighborMap);
+
+    /*
+    std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
+    std::cout << neighborMap[0 + 50][1 + 50][0 + 50] << std::endl;
+    std::cout << neighborMap[0 + 50][0 + 50][1 + 50] << std::endl;
+    std::cout << neighborMap[0 + 50][1 + 50][1 + 50] << std::endl;
+    std::cout << neighborMap[2 + 50][0 + 50][0 + 50] << std::endl;
+    std::cout << neighborMap[2 + 50][1 + 50][0 + 50] << std::endl;
+    std::cout << neighborMap[2 + 50][0 + 50][1 + 50] << std::endl;
+    std::cout << neighborMap[2 + 50][1 + 50][1 + 50] << std::endl;
+    */
+    // create 3d array representing future alive status of each cube
+    int*** futureMap = new int**[MAXLAYERS];
+    for (int i = 0; i < MAXLAYERS; ++i) {
+        futureMap[i] = new int*[MAXROWS];
+        for (int j = 0; j < MAXROWS; ++j) {
+            futureMap[i][j] = new int[MAXCOLS];
+        }
+    }
+
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                int neighborCount = neighborMap[i][j][k];
+                if (allCubeVertices[i][j][k].aliveStatus() > 1) {
+                    futureMap[i][j][k] = allCubeVertices[i][j][k].aliveStatus() + 1;
+                } else if (allCubeVertices[i][j][k].aliveStatus() == 1) {
+                    if (neighborCount == ALIVEREQ) {
+                        futureMap[i][j][k] = 1;
+                    } else {
+                        futureMap[i][j][k] = 2;
+                    }
+                } else {
+                    if (neighborCount == BIRTHREQ) {
+                        futureMap[i][j][k] = 1;
+                    } else {
+                        futureMap[i][j][k] = 0;
+                    }
+                }
+
+                if (futureMap[i][j][k] >= TOTALSTATES - 1) {
+                    futureMap[i][j][k] = 0;
+                }
+            }
+        }
+    }
+
+    // apply futuremap to allCubeVertices
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                allCubeVertices[i][j][k].setAliveStatus(futureMap[i][j][k]);
+            }
+        }
+    }
 }
 
 int main(void)
@@ -246,7 +341,7 @@ int main(void)
 
     // Create the view matrix using glm::lookAt
     // Set up view matrix
-    glm::vec3 cameraPos(55.0f, 55.0f, 55.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraPos(36.0f, 86.0f, 0.0f);  // Camera positioned at (5, 0, 5)
     glm::vec3 cameraTarget = glm::vec3(50.0f, 50.0f, 50.0f); // Camera looking at the origin
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
@@ -322,11 +417,11 @@ int main(void)
 
 
         // cube calculations
-        if (count % 1 == 0) {
-            // calculate alive status
-            updateCubes();
+        if (count % 1800 == 0) {
             // get usable buffers from allCubeVertices and alive status
             calcBuffers(aliveCubesVertices, indices, allCubeVertices, baseIndices);
+            // calculate alive status
+            updateCubes(allCubeVertices);
         }
         
         finalVertices = new float[aliveCubesVertices.size()];
@@ -355,7 +450,7 @@ int main(void)
 
         // Combine the transformations
         glm::mat4 model = translateBack * rotate * translateToOrigin;
-        angle += 0.1f; // Adjust the rotation speed as needed
+        angle += 0.01f; // Adjust the rotation speed as needed
         //glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around y-axis
 
         // Set up transformation matrix and pass it to the shader
