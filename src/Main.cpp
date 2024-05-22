@@ -34,19 +34,46 @@
 
 #define ALIVEREQ 9
 #define BIRTHREQ 4
+#define TOTALSTATES 2
 
+#define DEFAULTX 50
+#define DEFAULTY 50
+#define DEFAULTZ 50
 
 // low = 10, high ~= 150
 
 
-void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, std::vector<std::vector<std::vector<Cube>>> allCubeVertices, unsigned int baseIndices[]) {
+void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, std::vector<std::vector<std::vector<int>>> allCubeVertices, unsigned int baseIndices[]) {
     auto start = std::chrono::high_resolution_clock::now();
     indices.clear();
     aliveCubesVertices.clear();
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
-                if (allCubeVertices[i][j][k].aliveStatus() != 0) {
+
+                if (allCubeVertices[i][j][k] == 0) {
+                    continue;
+                }
+
+                for (int l = 0; l < 24; l++) {
+                    // could be wrong mapping between i j k and x y z
+                    aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
+                    aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
+                    aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+
+                    aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+                    aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+                    aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+                    aliveCubesVertices.push_back(0.4f);
+                    aliveCubesVertices.push_back(1 - (allCubeVertices[i][j][k] * 1.0f / TOTALSTATES));
+                    aliveCubesVertices.push_back(0.8f);
+                    //std::cout << "SQUARE : " << l << std::endl;
+                    //std::cout << i * Cube::GetPoint(l).x << j * Cube::GetPoint(l).y << k * Cube::GetPoint(l).z << std::endl;
+                }
+
+
+                /*if (allCubeVertices[i][j][k].aliveStatus() != 0) {
                     
                     for (int l = 0; l < 24; l++) {
                         
@@ -63,7 +90,7 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
                         
                     }
                     
-                }
+                }*/
             }
         }
     }
@@ -78,10 +105,11 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
-    std::cout << "c1 : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+    std::cout << "time in updatebuffer : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
 }
 
-void calculateNeighbors(std::vector<std::vector<std::vector<Cube>>> allCubeVertices, int *** neighborMap) {
+void calculateNeighbors(std::vector<std::vector<std::vector<int>>> & allCubeVertices, int *** neighborMap) {
+    auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
@@ -98,7 +126,7 @@ void calculateNeighbors(std::vector<std::vector<std::vector<Cube>>> allCubeVerti
 
                             // only neighbors with an alive status of 1 are counted
                             // CAN CHANGE THIS TO MODIFY BEHAVIOR AKA COUNT ALL DYING CELLS AS WELL
-                            if (allCubeVertices[i + l][j + m][k + n].aliveStatus() == 1) {
+                            if (allCubeVertices[i + l][j + m][k + n] == 1) {
                                 neighbors++;
                             }
                         }
@@ -108,9 +136,14 @@ void calculateNeighbors(std::vector<std::vector<std::vector<Cube>>> allCubeVerti
             }
         }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+    std::cout << "time in neighborcounter : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
 }
 
-void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) {
+void updateCubes(std::vector<std::vector<std::vector<int>>> & allCubeVertices) {
+    auto start = std::chrono::high_resolution_clock::now();
     // for each cube get amount of alive neighbors - Create neighbormap
     int*** neighborMap = new int**[MAXLAYERS];
     for (int i = 0; i < MAXLAYERS; ++i) {
@@ -145,17 +178,25 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
                 int neighborCount = neighborMap[i][j][k];
-                if (allCubeVertices[i][j][k].aliveStatus() > 1) {
-                    futureMap[i][j][k] = allCubeVertices[i][j][k].aliveStatus() + 1;
-                } else if (allCubeVertices[i][j][k].aliveStatus() == 1) {
+                if (allCubeVertices[i][j][k] != 0) {
+                    //std::cout << i << " " << j << " " << k << " " << neighborCount << std::endl;
+                }
+                //std::cout << "NEW " << std::endl;
+                if (allCubeVertices[i][j][k] > 1) {
+                    futureMap[i][j][k] = allCubeVertices[i][j][k] + 1;
+                    //std::cout << "PROBLEM!" << std::endl;
+                } else if (allCubeVertices[i][j][k] == 1) {
                     if (neighborCount == ALIVEREQ) {
                         futureMap[i][j][k] = 1;
+                        //std::cout << i << " " << j << " "  << k  << " " << neighborCount << " Count:" << neighborCount << " ALIVE SET ALIVE" << std::endl;
                     } else {
                         futureMap[i][j][k] = 2;
+                        //std::cout << i << " " << j << " "  << k  << " " << neighborCount << " Count:" << neighborCount << " ALIVE SET DEAD" << std::endl;
                     }
                 } else {
                     if (neighborCount == BIRTHREQ) {
                         futureMap[i][j][k] = 1;
+                        //std::cout << i << " " << j << " " <<   k  <<  " " << neighborCount << " Count:" << neighborCount << " DEAD SET ALIVE" << std::endl;
                     } else {
                         futureMap[i][j][k] = 0;
                     }
@@ -164,6 +205,7 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
                 if (futureMap[i][j][k] >= TOTALSTATES) {
                     futureMap[i][j][k] = 0;
                 }
+                //std::cout << "Map value: " << futureMap[i][j][k] << std::endl;
             }
         }
     }
@@ -172,10 +214,14 @@ void updateCubes(std::vector<std::vector<std::vector<Cube>>> & allCubeVertices) 
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
-                allCubeVertices[i][j][k].setAliveStatus(futureMap[i][j][k]);
+                allCubeVertices[i][j][k] = futureMap[i][j][k];
             }
         }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+    std::cout << "time in cube calc : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
 }
 
 int main(void)
@@ -216,13 +262,13 @@ int main(void)
     
 
 
-    std::vector<std::vector<std::vector<Cube>>> allCubeVertices(MAXROWS,
-        std::vector<std::vector<Cube>>(MAXCOLS, std::vector<Cube>(MAXLAYERS)));
+    std::vector<std::vector<std::vector<int>>> allCubeVertices(MAXROWS,
+        std::vector<std::vector<int>>(MAXCOLS, std::vector<int>(MAXLAYERS)));
     // initialize all possible verticies
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
-                allCubeVertices[i][j][k] = Cube(i, j, k, false);
+                allCubeVertices[i][j][k] = 0;
             }
         }
     }
@@ -237,14 +283,15 @@ int main(void)
         20, 21, 22, 20, 22, 23
     };
 
-    allCubeVertices[0 + 50][0 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[0 + 50][1 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[0 + 50][0 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[0 + 50][1 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[2 + 50][0 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[2 + 50][1 + 50][0 + 50].setAliveStatus(1);
-    allCubeVertices[2 + 50][0 + 50][1 + 50].setAliveStatus(1);
-    allCubeVertices[2 + 50][1 + 50][1 + 50].setAliveStatus(1);
+    allCubeVertices[0 + 50][0 + 50][0 + 50] = 1;
+    allCubeVertices[0 + 50][1 + 50][0 + 50] = 1;
+    allCubeVertices[0 + 50][0 + 50][1 + 50] = 1;
+    allCubeVertices[0 + 50][1 + 50][1 + 50] = 1;
+    allCubeVertices[2 + 50][0 + 50][0 + 50] = 1;
+    allCubeVertices[2 + 50][1 + 50][0 + 50] = 1;
+    allCubeVertices[2 + 50][0 + 50][1 + 50] = 1;
+    allCubeVertices[2 + 50][1 + 50][1 + 50] = 1;
+
     std::vector<float> aliveCubesVertices;
 
     // STEPS TO DRAW
@@ -254,38 +301,9 @@ int main(void)
     // 4. copy vectors to arrays
     // 5. create new va, vb, ib
 
-    for (int i = 0; i < MAXROWS; i++) {
-        for (int j = 0; j < MAXCOLS; j++) {
-            for (int k = 0; k < MAXLAYERS; k++) {
-                if (allCubeVertices[i][j][k].aliveStatus() != 0) {
-                    for (int l = 0; l < 24; l++) {
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].x);
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].y);
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getPoints()[l].z);
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].x);
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].y);
-                        aliveCubesVertices.push_back(allCubeVertices[i][j][k].getNormals()[l].z);
-                    }
-                }
-            }
-        }
-    }
-
     
-    
-
-
-    // get indcies of aliveCube - iterate every cube
-    for (int i = 0; i < aliveCubesVertices.size() / (24 * 6); i++) {
-        for (int j = 0; j < 36; j++) {
-            indices.push_back(baseIndices[j] + (i * 24)); 
-        }
-    }
-    
-    float * finalVertices = new float[aliveCubesVertices.size()];
-    unsigned int * finalIndices = new unsigned int[indices.size()];
-    std::copy(indices.begin(), indices.end(), finalIndices);
-    std::copy(aliveCubesVertices.begin(), aliveCubesVertices.end(), finalVertices);
+    float * finalVertices;
+    unsigned int * finalIndices;
 
 
     
@@ -306,7 +324,6 @@ int main(void)
     glDepthFunc(GL_LESS);
 
     VertexArray va;
-    VertexBuffer vb(finalVertices, sizeof(float) * aliveCubesVertices.size());
     //VertexBuffer nb(normals, sizeof(normals));
 
 
@@ -315,7 +332,7 @@ int main(void)
     layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
     layout.Push(3, GL_FLOAT);
-    va.AddBuffer(vb, layout);
+
 
     /*va.Bind();
     vb.Bind();
@@ -331,7 +348,7 @@ int main(void)
     //va.AddBuffer(nb, layout); 
 
     // index buffer object
-    IndexBuffer ib(finalIndices, indices.size());
+
 
     // START GLM SHENANIGANS
 
@@ -397,8 +414,6 @@ int main(void)
     
     
     va.Unbind();
-    vb.Unbind();
-    ib.Unbind();
     shader.Unbind();
 
     Renderer renderer;
@@ -454,7 +469,7 @@ int main(void)
             end = std::chrono::high_resolution_clock::now();
             elapsed_seconds = end - start;
             elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
-            //std::cout << "Elapsed time2: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+            std::cout << "Elapsed time2: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
         }
         finalVertices = new float[aliveCubesVertices.size()];
         finalIndices = new unsigned int[indices.size()];
