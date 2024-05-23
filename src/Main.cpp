@@ -32,9 +32,9 @@
 #define MAXCOLS 100
 #define MAXLAYERS 100
 
-#define ALIVEREQ 9
+#define ALIVEREQ 4
 #define BIRTHREQ 4
-#define TOTALSTATES 3
+#define TOTALSTATES 5
 
 #define DEFAULTX 50
 #define DEFAULTY 50
@@ -260,7 +260,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
                     //std::cout << "PROBLEM!" << std::endl;
                 } else if (allCubeVertices[i][j][k] == 1) {
                     // alivereq
-                    if (neighborCount == 6 || neighborCount == 7 || neighborCount == 8) {
+                    if (neighborCount == ALIVEREQ) {
                         futureMap[i][j][k] = 1;
                         //std::cout << i << " " << j << " "  << k  << " " << neighborCount << " Count:" << neighborCount << " ALIVE SET ALIVE" << std::endl;
                     } else {
@@ -269,7 +269,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
                     }
                 } else {
                     // birthreq
-                    if (neighborCount == 6 || neighborCount == 7 || neighborCount == 8) {
+                    if (neighborCount == BIRTHREQ) {
                         futureMap[i][j][k] = 1;
                         //std::cout << i << " " << j << " " <<   k  <<  " " << neighborCount << " Count:" << neighborCount << " DEAD SET ALIVE" << std::endl;
                     } else {
@@ -386,15 +386,34 @@ int main(void)
     allCubeVertices[2 + 50][1 + 50][0 + 50] = 1;
     allCubeVertices[2 + 50][0 + 50][1 + 50] = 1;
     allCubeVertices[2 + 50][1 + 50][1 + 50] = 1;
+    
+    allCubeVertices[4 + 50][0 + 50][0 + 50] = 1;
+    allCubeVertices[4 + 50][1 + 50][0 + 50] = 1;
+    allCubeVertices[4 + 50][0 + 50][1 + 50] = 1;
+    allCubeVertices[4 + 50][1 + 50][1 + 50] = 1;
+    
+    allCubeVertices[6 + 50][0 + 50][0 + 50] = 1;
+    allCubeVertices[6 + 50][1 + 50][0 + 50] = 1;
+    allCubeVertices[6 + 50][0 + 50][1 + 50] = 1;
+    allCubeVertices[6 + 50][1 + 50][1 + 50] = 1;
+    
+    allCubeVertices[3 + 50][0 + 52][0 + 50] = 1;
+    allCubeVertices[3 + 50][1 + 52][0 + 50] = 1;
+    allCubeVertices[3 + 50][0 + 52][1 + 50] = 1;
+    allCubeVertices[3 + 50][1 + 52][1 + 50] = 1;
+    allCubeVertices[5 + 50][0 + 52][0 + 50] = 1;
+    allCubeVertices[5 + 50][1 + 52][0 + 50] = 1;
+    allCubeVertices[5 + 50][0 + 52][1 + 50] = 1;
+    allCubeVertices[5 + 50][1 + 52][1 + 50] = 1;
 
     srand(time(NULL)); // Seed the random number generator
 
-    int numCubes = 5000;// Generate a random number between 0 and 10
+    int numCubes = 10000;// Generate a random number between 0 and 10
 
     for (int i = 0; i < numCubes; i++) {
-        int x = rand() % 21 - 10; // Generate a random number between -5 and 5
-        int y = rand() % 21 - 10; // Generate a random number between -5 and 5
-        int z = rand() % 21 - 10; // Generate a random number between -5 and 5
+        int x = rand() % 51 - 25; // Generate a random number between -5 and 5
+        int y = rand() % 51 - 25; // Generate a random number between -5 and 5
+        int z = rand() % 51 - 25; // Generate a random number between -5 and 5
 
         allCubeVertices[50 + x][50 + y][50 + z] = 1;
     }
@@ -562,7 +581,7 @@ int main(void)
 
 
         // cube calculations
-        if (count % 10 == 0) {
+        if (count % 20 == 0) {
             start = std::chrono::high_resolution_clock::now();
 
             // get usable buffers from allCubeVertices and alive status
