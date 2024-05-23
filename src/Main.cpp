@@ -28,19 +28,19 @@
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 980
 
-#define MAXROWS 100
-#define MAXCOLS 100
-#define MAXLAYERS 100
+#define MAXROWS 200
+#define MAXCOLS 200
+#define MAXLAYERS 200
 
 #define ALIVEREQ 4
 #define BIRTHREQ 4
 #define TOTALSTATES 5
 
-#define DEFAULTX 50
-#define DEFAULTY 50
-#define DEFAULTZ 50
+#define DEFAULTX 100.0f
+#define DEFAULTY 100.0f
+#define DEFAULTZ 100.0f
 
-// low = 10, high ~= 150
+// low = 10, high ~= 1100
 
 /*
 PERFORMANCE IMPROVEMENETS:
@@ -52,6 +52,194 @@ PERFORMANCE IMPROVEMENETS:
 
 */
 
+void addBorder(std::vector<float> & aliveCubesVertices) {
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+    }
+
+    for (int j = 0; j < MAXROWS; j++) {
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+    }
+
+    for (int k = 0; k < MAXROWS; k++) {
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+
+        for (int l = 0; l < 24; l++) {
+            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
+            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+
+
+            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
+            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+
+            aliveCubesVertices.push_back(1.0f);
+            aliveCubesVertices.push_back(0.0f);
+            aliveCubesVertices.push_back(1.0f);
+        }
+    }
+    
+}
 
 void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, int *** allCubeVertices, unsigned int baseIndices[], std::vector<glm::vec3> & alivePoints) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -113,6 +301,8 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
             }
         }
     }
+
+    addBorder(aliveCubesVertices);
     
     
     // get indcies of aliveCube - iterate every cube
@@ -229,14 +419,14 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
 
    
     
-    /*std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
-    std::cout << neighborMap[0 + 50][1 + 50][0 + 50] << std::endl;
-    std::cout << neighborMap[0 + 50][0 + 50][1 + 50] << std::endl;
-    std::cout << neighborMap[0 + 50][1 + 50][1 + 50] << std::endl;
-    std::cout << neighborMap[2 + 50][0 + 50][0 + 50] << std::endl;
-    std::cout << neighborMap[2 + 50][1 + 50][0 + 50] << std::endl;
-    std::cout << neighborMap[2 + 50][0 + 50][1 + 50] << std::endl;
-    std::cout << neighborMap[2 + 50][1 + 50][1 + 50] << std::endl;*/
+    /*std::cout << neighborMap[0 + 100][0 + 100][0 + 100] << std::endl;
+    std::cout << neighborMap[0 + 100][1 + 100][0 + 100] << std::endl;
+    std::cout << neighborMap[0 + 100][0 + 100][1 + 100] << std::endl;
+    std::cout << neighborMap[0 + 100][1 + 100][1 + 100] << std::endl;
+    std::cout << neighborMap[2 + 100][0 + 100][0 + 100] << std::endl;
+    std::cout << neighborMap[2 + 100][1 + 100][0 + 100] << std::endl;
+    std::cout << neighborMap[2 + 100][0 + 100][1 + 100] << std::endl;
+    std::cout << neighborMap[2 + 100][1 + 100][1 + 100] << std::endl;*/
     
     // create 3d array representing future alive status of each cube
     int*** futureMap = new int**[MAXLAYERS];
@@ -314,6 +504,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
     
 }
 
+
 int main(void)
 {
     GLFWwindow* window;
@@ -378,33 +569,33 @@ int main(void)
         20, 21, 22, 20, 22, 23
     };
 
-    allCubeVertices[0 + 50][0 + 50][0 + 50] = 1;
-    allCubeVertices[0 + 50][1 + 50][0 + 50] = 1;
-    allCubeVertices[0 + 50][0 + 50][1 + 50] = 1;
-    allCubeVertices[0 + 50][1 + 50][1 + 50] = 1;
-    allCubeVertices[2 + 50][0 + 50][0 + 50] = 1;
-    allCubeVertices[2 + 50][1 + 50][0 + 50] = 1;
-    allCubeVertices[2 + 50][0 + 50][1 + 50] = 1;
-    allCubeVertices[2 + 50][1 + 50][1 + 50] = 1;
+    allCubeVertices[0 + 100][0 + 100][0 + 100] = 1;
+    allCubeVertices[0 + 100][1 + 100][0 + 100] = 1;
+    allCubeVertices[0 + 100][0 + 100][1 + 100] = 1;
+    allCubeVertices[0 + 100][1 + 100][1 + 100] = 1;
+    allCubeVertices[2 + 100][0 + 100][0 + 100] = 1;
+    allCubeVertices[2 + 100][1 + 100][0 + 100] = 1;
+    allCubeVertices[2 + 100][0 + 100][1 + 100] = 1;
+    allCubeVertices[2 + 100][1 + 100][1 + 100] = 1;
     
-    allCubeVertices[4 + 50][0 + 50][0 + 50] = 1;
-    allCubeVertices[4 + 50][1 + 50][0 + 50] = 1;
-    allCubeVertices[4 + 50][0 + 50][1 + 50] = 1;
-    allCubeVertices[4 + 50][1 + 50][1 + 50] = 1;
+    allCubeVertices[4 + 100][0 + 100][0 + 100] = 1;
+    allCubeVertices[4 + 100][1 + 100][0 + 100] = 1;
+    allCubeVertices[4 + 100][0 + 100][1 + 100] = 1;
+    allCubeVertices[4 + 100][1 + 100][1 + 100] = 1;
     
-    allCubeVertices[6 + 50][0 + 50][0 + 50] = 1;
-    allCubeVertices[6 + 50][1 + 50][0 + 50] = 1;
-    allCubeVertices[6 + 50][0 + 50][1 + 50] = 1;
-    allCubeVertices[6 + 50][1 + 50][1 + 50] = 1;
+    allCubeVertices[6 + 100][0 + 100][0 + 100] = 1;
+    allCubeVertices[6 + 100][1 + 100][0 + 100] = 1;
+    allCubeVertices[6 + 100][0 + 100][1 + 100] = 1;
+    allCubeVertices[6 + 100][1 + 100][1 + 100] = 1;
     
-    allCubeVertices[3 + 50][0 + 52][0 + 50] = 1;
-    allCubeVertices[3 + 50][1 + 52][0 + 50] = 1;
-    allCubeVertices[3 + 50][0 + 52][1 + 50] = 1;
-    allCubeVertices[3 + 50][1 + 52][1 + 50] = 1;
-    allCubeVertices[5 + 50][0 + 52][0 + 50] = 1;
-    allCubeVertices[5 + 50][1 + 52][0 + 50] = 1;
-    allCubeVertices[5 + 50][0 + 52][1 + 50] = 1;
-    allCubeVertices[5 + 50][1 + 52][1 + 50] = 1;
+    allCubeVertices[3 + 100][0 + 52][0 + 100] = 1;
+    allCubeVertices[3 + 100][1 + 52][0 + 100] = 1;
+    allCubeVertices[3 + 100][0 + 52][1 + 100] = 1;
+    allCubeVertices[3 + 100][1 + 52][1 + 100] = 1;
+    allCubeVertices[5 + 100][0 + 52][0 + 100] = 1;
+    allCubeVertices[5 + 100][1 + 52][0 + 100] = 1;
+    allCubeVertices[5 + 100][0 + 52][1 + 100] = 1;
+    allCubeVertices[5 + 100][1 + 52][1 + 100] = 1;
 
     srand(time(NULL)); // Seed the random number generator
 
@@ -415,7 +606,7 @@ int main(void)
         int y = rand() % 51 - 25; // Generate a random number between -5 and 5
         int z = rand() % 51 - 25; // Generate a random number between -5 and 5
 
-        allCubeVertices[50 + x][50 + y][50 + z] = 1;
+        allCubeVertices[100 + x][100 + y][100 + z] = 1;
     }
 
     std::vector<float> aliveCubesVertices;
@@ -499,8 +690,8 @@ int main(void)
 
     // Create the view matrix using glm::lookAt
     // Set up view matrix
-    glm::vec3 cameraPos(100.0f, 100.0f, 100.0f);  // Camera positioned at (5, 0, 5)
-    glm::vec3 cameraTarget = glm::vec3(50.0f, 50.0f, 50.0f); // Camera looking at the origin
+    glm::vec3 cameraPos(275.0f, 275.0f, 275.0f);  // Camera positioned at (5, 0, 5)
+    glm::vec3 cameraTarget = glm::vec3(DEFAULTX, DEFAULTY, DEFAULTZ); // Camera looking at the origin
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);  // Up vector
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, up);
     
@@ -511,7 +702,7 @@ int main(void)
     // Combine the model, view, and projection matrices
     //glm::mat4 MVP = projection * view * model;
      // adjust screenWidth and screenHeight accordingly
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 200.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 800.0f);
 
 
 
@@ -534,7 +725,7 @@ int main(void)
     //shader.SetUniform1i("u_Texture", 0);
     
     // Set light position and color through uniforms
-    shader.SetUniform3f("u_LightPosition", 100.0f, 100.0f, 50.0f);
+    shader.SetUniform3f("u_LightPosition", 200.0f, 300.0f, 200.0f);
     shader.SetUniform3f("u_LightColor", 1.0f, 1.0f, 1.0f);
     shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
     
@@ -599,6 +790,7 @@ int main(void)
             elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
             std::cout << "Elapsed time2: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
         }
+
         finalVertices = new float[aliveCubesVertices.size()];
         finalIndices = new unsigned int[indices.size()];
         std::copy(indices.begin(), indices.end(), finalIndices);
@@ -612,7 +804,7 @@ int main(void)
         // Update model matrix for rotation
         static float angle = 0.0f;
 
-        glm::vec3 modelCenter(50.0f, 50.0f, 50.0f); // Center of the model
+        glm::vec3 modelCenter(100.0f, 100.0f, 100.0f); // Center of the model
 
         // Translate the model to the origin
         glm::mat4 translateToOrigin = glm::translate(glm::mat4(1.0f), -modelCenter);
