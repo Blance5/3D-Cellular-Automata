@@ -161,7 +161,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
-                neighborMap[i][j][k] = 0;
+                neighborMap[i][j][k] = -1;
             }
         }
     }
@@ -191,9 +191,22 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
                     //}
 
                     //checkedPoints.push_back(glm::vec3(i + l, j + m, k + n));
+                    if (neighborMap[i + l][j + m][k + n] != -1) {
+                        continue;
+                    }
+
                     calculateNeighbors(allCubeVertices, neighborMap, i + l, j + m, k + n);
-                    
                     // maintain which points have already had neighbors calculated for
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                if (neighborMap[i][j][k] == -1) {
+                    neighborMap[i][j][k] = 0;
                 }
             }
         }
