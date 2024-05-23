@@ -34,13 +34,23 @@
 
 #define ALIVEREQ 9
 #define BIRTHREQ 4
-#define TOTALSTATES 2
+#define TOTALSTATES 3
 
 #define DEFAULTX 50
 #define DEFAULTY 50
 #define DEFAULTZ 50
 
 // low = 10, high ~= 150
+
+/*
+PERFORMANCE IMPROVEMENETS:
+1. maintain vector of all alive points instead of cube vector
+2. only calculate neighbors of neighbors of alive points
+3. reduce neighbor calculations by not double counting neighbors of points, initialize with -1 and only calculate if -1
+4. maintain vector with alive points in i, j, k format to help with generating be able to calculate neighbors of neighbors of alive points
+
+
+*/
 
 
 void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, int *** allCubeVertices, unsigned int baseIndices[], std::vector<glm::vec3> & alivePoints) {
@@ -217,15 +227,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
     std::cout << "Neighbor stuff : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
     // decode float to int ->
 
-    for (int i = 0; i < MAXROWS; i++) {
-        for (int j = 0; j < MAXCOLS; j++) {
-            for (int k = 0; k < MAXLAYERS; k++) {
-                if (allCubeVertices[i][j][k] == 1) {
-                    //std::cout << "NEIGHBORS OF " << i << " " << j << " " << k << " " << neighborMap[i][j][k] << std::endl;
-                }
-            }
-        }
-    }
+   
     
     /*std::cout << neighborMap[0 + 50][0 + 50][0 + 50] << std::endl;
     std::cout << neighborMap[0 + 50][1 + 50][0 + 50] << std::endl;
@@ -257,7 +259,8 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
                     futureMap[i][j][k] = allCubeVertices[i][j][k] + 1;
                     //std::cout << "PROBLEM!" << std::endl;
                 } else if (allCubeVertices[i][j][k] == 1) {
-                    if (neighborCount == ALIVEREQ) {
+                    // alivereq
+                    if (neighborCount == 6 || neighborCount == 7 || neighborCount == 8) {
                         futureMap[i][j][k] = 1;
                         //std::cout << i << " " << j << " "  << k  << " " << neighborCount << " Count:" << neighborCount << " ALIVE SET ALIVE" << std::endl;
                     } else {
@@ -265,7 +268,8 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
                         //std::cout << i << " " << j << " "  << k  << " " << neighborCount << " Count:" << neighborCount << " ALIVE SET DEAD" << std::endl;
                     }
                 } else {
-                    if (neighborCount == BIRTHREQ) {
+                    // birthreq
+                    if (neighborCount == 6 || neighborCount == 7 || neighborCount == 8) {
                         futureMap[i][j][k] = 1;
                         //std::cout << i << " " << j << " " <<   k  <<  " " << neighborCount << " Count:" << neighborCount << " DEAD SET ALIVE" << std::endl;
                     } else {
@@ -382,6 +386,18 @@ int main(void)
     allCubeVertices[2 + 50][1 + 50][0 + 50] = 1;
     allCubeVertices[2 + 50][0 + 50][1 + 50] = 1;
     allCubeVertices[2 + 50][1 + 50][1 + 50] = 1;
+
+    srand(time(NULL)); // Seed the random number generator
+
+    int numCubes = 5000;// Generate a random number between 0 and 10
+
+    for (int i = 0; i < numCubes; i++) {
+        int x = rand() % 21 - 10; // Generate a random number between -5 and 5
+        int y = rand() % 21 - 10; // Generate a random number between -5 and 5
+        int z = rand() % 21 - 10; // Generate a random number between -5 and 5
+
+        allCubeVertices[50 + x][50 + y][50 + z] = 1;
+    }
 
     std::vector<float> aliveCubesVertices;
 
@@ -546,7 +562,7 @@ int main(void)
 
 
         // cube calculations
-        if (count % 50 == 0) {
+        if (count % 10 == 0) {
             start = std::chrono::high_resolution_clock::now();
 
             // get usable buffers from allCubeVertices and alive status
