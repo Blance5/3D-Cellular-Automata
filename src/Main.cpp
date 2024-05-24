@@ -32,9 +32,9 @@
 #define MAXCOLS 200
 #define MAXLAYERS 200
 
-#define ALIVEREQ 4
+#define ALIVEREQ 9
 #define BIRTHREQ 4
-#define TOTALSTATES 5
+#define TOTALSTATES 2
 
 #define DEFAULTX 100.0f
 #define DEFAULTY 100.0f
@@ -52,203 +52,212 @@ PERFORMANCE IMPROVEMENETS:
 
 */
 
-void addBorder(std::vector<float> & aliveCubesVertices) {
+int gcountLines = 0;
+int gcountCubes = 0;
+
+void addBorder(std::vector<float> & allSpaces) {
     for (int i = 0; i < MAXROWS; i++) {
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+            allSpaces.push_back(i + Cube::GetPoint(l).x);
+            allSpaces.push_back(0 + Cube::GetPoint(l).y);
+            allSpaces.push_back(0 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+            allSpaces.push_back(i + Cube::GetPoint(l).x);
+            allSpaces.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            allSpaces.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+            allSpaces.push_back(i + Cube::GetPoint(l).x);
+            allSpaces.push_back(0 + Cube::GetPoint(l).y);
+            allSpaces.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+            allSpaces.push_back(i + Cube::GetPoint(l).x);
+            allSpaces.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            allSpaces.push_back(0 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
     }
 
     for (int j = 0; j < MAXROWS; j++) {
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+            allSpaces.push_back(0 + Cube::GetPoint(l).x);
+            allSpaces.push_back(j + Cube::GetPoint(l).y);
+            allSpaces.push_back(0 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+            allSpaces.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            allSpaces.push_back(j + Cube::GetPoint(l).y);
+            allSpaces.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
+            allSpaces.push_back(0 + Cube::GetPoint(l).x);
+            allSpaces.push_back(j + Cube::GetPoint(l).y);
+            allSpaces.push_back(MAXLAYERS - 1 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).z);
+            allSpaces.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            allSpaces.push_back(j + Cube::GetPoint(l).y);
+            allSpaces.push_back(0 + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
     }
 
     for (int k = 0; k < MAXROWS; k++) {
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+            allSpaces.push_back(0 + Cube::GetPoint(l).x);
+            allSpaces.push_back(0 + Cube::GetPoint(l).y);
+            allSpaces.push_back(k + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+            allSpaces.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            allSpaces.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            allSpaces.push_back(k + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+            allSpaces.push_back(0 + Cube::GetPoint(l).x);
+            allSpaces.push_back(MAXCOLS - 1 + Cube::GetPoint(l).y);
+            allSpaces.push_back(k + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
 
         for (int l = 0; l < 24; l++) {
-            aliveCubesVertices.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
-            aliveCubesVertices.push_back(0 + Cube::GetPoint(l).y);
-            aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
+            allSpaces.push_back(MAXROWS - 1 + Cube::GetPoint(l).x);
+            allSpaces.push_back(0 + Cube::GetPoint(l).y);
+            allSpaces.push_back(k + Cube::GetPoint(l).z);
 
 
-            aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-            aliveCubesVertices.push_back(Cube::GetNormal(l).z);
+            allSpaces.push_back(Cube::GetNormal(l).x);
+            allSpaces.push_back(Cube::GetNormal(l).y);
+            allSpaces.push_back(Cube::GetNormal(l).z);
 
-            aliveCubesVertices.push_back(1.0f);
-            aliveCubesVertices.push_back(0.0f);
-            aliveCubesVertices.push_back(1.0f);
+            allSpaces.push_back(1.0f);
+            allSpaces.push_back(0.0f);
+            allSpaces.push_back(1.0f);
         }
     }
     
 }
 
-void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned int> & indices, int *** allCubeVertices, unsigned int baseIndices[], std::vector<glm::vec3> & alivePoints) {
+void calcBuffers(std::vector<std::vector<unsigned int>> & allIndices,
+    int *** allCubeVertices, unsigned int baseIndices[], std::vector<glm::vec3> & alivePoints,
+    std::vector<std::vector<float>> & allSpaces, int spaceIdx) {
+
     auto start = std::chrono::high_resolution_clock::now();
-    indices.clear();
-    aliveCubesVertices.clear();
     alivePoints.clear();
+
+    std::vector<float> space;
+    std::cout << "cb1\n";
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
+
+                //std::cout << "start: " << i << " " << j << " " << k << std::endl;
 
                 if (allCubeVertices[i][j][k] == 0) {
                     continue;
@@ -260,23 +269,27 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
                     //std::cout << "ADDED TO ALIVE: " << i << " " << j << " " << k << std::endl;
                 }
                 
-
+                gcountCubes++;
                 for (int l = 0; l < 24; l++) {
-                    // could be wrong mapping between i j k and x y z
-                    aliveCubesVertices.push_back(i + Cube::GetPoint(l).x);
-                    aliveCubesVertices.push_back(j + Cube::GetPoint(l).y);
-                    aliveCubesVertices.push_back(k + Cube::GetPoint(l).z);
-
-                    
-                    aliveCubesVertices.push_back(Cube::GetNormal(l).x);
-                    aliveCubesVertices.push_back(Cube::GetNormal(l).y);
-                    aliveCubesVertices.push_back(Cube::GetNormal(l).z);
-
-                    aliveCubesVertices.push_back(0.4f);
-                    aliveCubesVertices.push_back(1 - (allCubeVertices[i][j][k] * 1.0f / TOTALSTATES));
-                    aliveCubesVertices.push_back(0.8f);
+                    // could be wrong mapping between i j k and x y 
                     //std::cout << "SQUARE : " << l << std::endl;
                     //std::cout << i * Cube::GetPoint(l).x << j * Cube::GetPoint(l).y << k * Cube::GetPoint(l).z << std::endl;
+
+                    // ALSO add points to corresponding space
+                    //std::cout << "f1\n";
+                    gcountLines++;
+                    space.push_back(i + Cube::GetPoint(l).x);
+                    space.push_back(j + Cube::GetPoint(l).y);
+                    space.push_back(k + Cube::GetPoint(l).z);
+
+                    //std::cout << "f2\n";
+                    space.push_back(Cube::GetNormal(l).x);
+                    space.push_back(Cube::GetNormal(l).y);
+                    space.push_back(Cube::GetNormal(l).z);
+                    //std::cout << "f3\n";
+                    space.push_back(0.4f);
+                    space.push_back(1 - (allCubeVertices[i][j][k] * 1.0f / TOTALSTATES));
+                    space.push_back(0.8f);
                 }
 
 
@@ -302,15 +315,20 @@ void calcBuffers(std::vector<float> & aliveCubesVertices, std::vector<unsigned i
         }
     }
 
-    addBorder(aliveCubesVertices);
+    allSpaces.push_back(space);
     
+    //addBorder(allSpaces[spaceIdx]);
     
+    std::vector<unsigned int> indices;
     // get indcies of aliveCube - iterate every cube
-    for (int i = 0; i < aliveCubesVertices.size() / (24 * 9); i++) {
+    for (int i = 0; i < allSpaces[spaceIdx].size() / (24 * 9); i++) {
         for (int j = 0; j < 36; j++) {
             indices.push_back(baseIndices[j] + (i * 24)); 
         }
     }
+
+    allIndices.push_back(indices);
+    
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
@@ -348,7 +366,7 @@ void calculateNeighbors(int *** allCubeVertices, int *** neighborMap, int i, int
 }
 
 void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) {
-    
+    auto start = std::chrono::high_resolution_clock::now();
     // for each cube get amount of alive neighbors - Create neighbormap
     int*** neighborMap = new int**[MAXLAYERS];
     for (int i = 0; i < MAXLAYERS; ++i) {
@@ -367,7 +385,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
     }
 
     //std::vector<glm::vec3> checkedPoints;
-    auto start = std::chrono::high_resolution_clock::now();
+    
     // only calculate neighbors of neighbors of alive cubes
     for (glm::vec3 point : alivePoints) {
         int i = point.x;
@@ -401,6 +419,7 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
             }
         }
     }
+    
 
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
@@ -411,10 +430,10 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
             }
         }
     }
-    auto end = std::chrono::high_resolution_clock::now();
+    /*auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
-    std::cout << "Neighbor stuff : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+    std::cout << "Neighbor stuff : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;*/
     // decode float to int ->
 
    
@@ -475,6 +494,8 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
         }
     }
 
+    
+
     // apply futuremap to allCubeVertices
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
@@ -501,6 +522,10 @@ void updateCubes(int *** allCubeVertices, std::vector<glm::vec3> & alivePoints) 
     }
     delete[] neighborMap;
 
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+    std::cout << "Time in updateCube : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
     
 }
 
@@ -560,6 +585,7 @@ int main(void)
     }
 
     std::vector<unsigned int> indices;
+    std::vector<std::vector<unsigned int>> allIndices;
     unsigned int baseIndices[] = {
         0, 1, 2, 0, 2, 3,
         4, 5, 6, 4, 6, 7,
@@ -578,7 +604,7 @@ int main(void)
     allCubeVertices[2 + 100][0 + 100][1 + 100] = 1;
     allCubeVertices[2 + 100][1 + 100][1 + 100] = 1;
     
-    allCubeVertices[4 + 100][0 + 100][0 + 100] = 1;
+    /*allCubeVertices[4 + 100][0 + 100][0 + 100] = 1;
     allCubeVertices[4 + 100][1 + 100][0 + 100] = 1;
     allCubeVertices[4 + 100][0 + 100][1 + 100] = 1;
     allCubeVertices[4 + 100][1 + 100][1 + 100] = 1;
@@ -595,9 +621,9 @@ int main(void)
     allCubeVertices[5 + 100][0 + 52][0 + 100] = 1;
     allCubeVertices[5 + 100][1 + 52][0 + 100] = 1;
     allCubeVertices[5 + 100][0 + 52][1 + 100] = 1;
-    allCubeVertices[5 + 100][1 + 52][1 + 100] = 1;
+    allCubeVertices[5 + 100][1 + 52][1 + 100] = 1;*/
 
-    srand(time(NULL)); // Seed the random number generator
+    /*srand(time(NULL)); // Seed the random number generator
 
     int numCubes = 10000;// Generate a random number between 0 and 10
 
@@ -607,9 +633,9 @@ int main(void)
         int z = rand() % 51 - 25; // Generate a random number between -5 and 5
 
         allCubeVertices[100 + x][100 + y][100 + z] = 1;
-    }
+    }*/
 
-    std::vector<float> aliveCubesVertices;
+
 
     // STEPS TO DRAW
     // 1. iterate through every cube
@@ -750,7 +776,7 @@ int main(void)
 
     float r = 0.0f;
     float increment = 0.05f;
-    int count = 0;
+    int count = 1;
 
     std::vector<glm::vec3> alivePoints;
 
@@ -759,6 +785,41 @@ int main(void)
     std::chrono::duration<double> elapsed_seconds = end - start;
     auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
     /* Loop until the user closes the window */
+
+    int spaceToRender = 0;
+
+    std::vector<std::vector<float>> allSpaces;
+
+    // cube calculations
+    
+
+    int ITERATIONS = 200;
+    for (int i = 0; i < ITERATIONS; i++) {
+        std::cout << "ITERATION: " << i << std::endl;
+        // get usable buffers from allCubeVertices and alive status
+        calcBuffers(allIndices, allCubeVertices, baseIndices, alivePoints, allSpaces, i);
+        
+
+        updateCubes(allCubeVertices, alivePoints);
+
+    }
+
+    std::cout << "\n\nDONE LOADING\n";
+
+    std::cout << "index size: " << allIndices[spaceToRender].size() << std::endl;
+    
+    for (int i = 0; i < allIndices[spaceToRender].size(); i++) {
+        std::cout << allIndices[spaceToRender][i] << " ";
+        if ((i + 1) % 6 == 0) {
+            std::cout << std::endl;
+        }
+    }
+
+    //std::cout << "SIZE: " << allSpaces[spaceToRender].size() << std::endl;
+    //std::cout << "gcountL: " << gcountLines << std::endl;
+    //std::cout << "gcountC: " << gcountCubes << std::endl;
+    
+
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
@@ -769,39 +830,23 @@ int main(void)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
-
-        // cube calculations
         if (count % 20 == 0) {
-            start = std::chrono::high_resolution_clock::now();
-
-            // get usable buffers from allCubeVertices and alive status
-            calcBuffers(aliveCubesVertices, indices, allCubeVertices, baseIndices, alivePoints);
-            end = std::chrono::high_resolution_clock::now();
-            elapsed_seconds = end - start;
-            elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
-            std::cout << "Elapsed time1: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
-
-
-            start = std::chrono::high_resolution_clock::now();
-            updateCubes(allCubeVertices, alivePoints);
-            end = std::chrono::high_resolution_clock::now();
-            elapsed_seconds = end - start;
-            elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
-            std::cout << "Elapsed time2: " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+            if (spaceToRender < ITERATIONS - 1)
+            spaceToRender++;
         }
+        
+        
+        finalVertices = new float[allSpaces[spaceToRender].size()];
+        finalIndices = new unsigned int[allIndices[spaceToRender].size()];
+        std::copy(allIndices[spaceToRender].begin(), allIndices[spaceToRender].end(), finalIndices);
+        std::copy(allSpaces[spaceToRender].begin(), allSpaces[spaceToRender].end(), finalVertices);
 
-        finalVertices = new float[aliveCubesVertices.size()];
-        finalIndices = new unsigned int[indices.size()];
-        std::copy(indices.begin(), indices.end(), finalIndices);
-        std::copy(aliveCubesVertices.begin(), aliveCubesVertices.end(), finalVertices);
-
-        IndexBuffer ib(finalIndices, indices.size());
-        VertexBuffer vb(finalVertices, sizeof(float) * aliveCubesVertices.size());
+        IndexBuffer ib(finalIndices, allIndices[spaceToRender].size());
+        VertexBuffer vb(finalVertices, sizeof(float) * allSpaces[spaceToRender].size());
         va.AddBuffer(vb, layout);
 
 
-        // Update model matrix for rotation
+        // Update model matrix for rotati   on
         static float angle = 0.0f;
 
         glm::vec3 modelCenter(100.0f, 100.0f, 100.0f); // Center of the model
@@ -861,7 +906,7 @@ int main(void)
 
         
 
-
+        
 
 
         if (r > 1.0f) {
