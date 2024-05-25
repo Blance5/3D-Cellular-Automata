@@ -244,15 +244,36 @@ void addBorder(std::vector<float> & allSpaces) {
     
 }
 
-void calcBuffers(std::vector<std::vector<unsigned int>> & allIndices,
+float * calcBuffers(unsigned int ** allIndices,
     int *** allCubeVertices, unsigned int baseIndices[], std::vector<glm::vec3> & alivePoints,
-    std::vector<std::vector<float>> & allSpaces, int spaceIdx) {
+    float ** allSpaces, int spaceIdx, std::vector<int> & arraySizes) {
 
     auto start = std::chrono::high_resolution_clock::now();
     alivePoints.clear();
 
-    std::vector<float> space;
     std::cout << "cb1\n";
+
+    // finding num alive cubes
+    int numAliveCubes = 0;
+    for (int i = 0; i < MAXROWS; i++) {
+        for (int j = 0; j < MAXCOLS; j++) {
+            for (int k = 0; k < MAXLAYERS; k++) {
+                if (allCubeVertices[i][j][k] != 0) {
+                    numAliveCubes++;
+                }
+            }
+        }
+    }
+
+    arraySizes.push_back(numAliveCubes * 24 * 9);
+
+    float * space = new float[numAliveCubes * 24 * 9];
+    for (int i = 0; i < 24 * 9 * numAliveCubes; i++) {
+        space[i] = 0.0f;
+    }
+    
+
+    int curCubeCount = 0;
     for (int i = 0; i < MAXROWS; i++) {
         for (int j = 0; j < MAXCOLS; j++) {
             for (int k = 0; k < MAXLAYERS; k++) {
@@ -278,20 +299,20 @@ void calcBuffers(std::vector<std::vector<unsigned int>> & allIndices,
                     // ALSO add points to corresponding space
                     //std::cout << "f1\n";
                     gcountLines++;
-                    space.push_back(i + Cube::GetPoint(l).x);
-                    space.push_back(j + Cube::GetPoint(l).y);
-                    space.push_back(k + Cube::GetPoint(l).z);
+                    space[(l * 9) + (curCubeCount * 24 * 9)] = i + Cube::GetPoint(l).x;
+                    space[(l * 9 + 1) + (curCubeCount * 24 * 9)] = j + Cube::GetPoint(l).y;
+                    space[l * 9 + 2 + + (curCubeCount * 24 * 9)] = k + Cube::GetPoint(l).z;
 
                     //std::cout << "f2\n";
-                    space.push_back(Cube::GetNormal(l).x);
-                    space.push_back(Cube::GetNormal(l).y);
-                    space.push_back(Cube::GetNormal(l).z);
+                    space[l * 9 + 3 + + (curCubeCount * 24 * 9)] = Cube::GetNormal(l).x;
+                    space[l * 9 + 4 + + (curCubeCount * 24 * 9)] = Cube::GetNormal(l).y;
+                    space[l * 9 + 5 + + (curCubeCount * 24 * 9)] = Cube::GetNormal(l).z;
                     //std::cout << "f3\n";
-                    space.push_back(0.4f);
-                    space.push_back(1 - (allCubeVertices[i][j][k] * 1.0f / TOTALSTATES));
-                    space.push_back(0.8f);
+                    space[l * 9 + 6 + + (curCubeCount * 24 * 9)] = 0.4f;
+                    space[l * 9 + 7 + + (curCubeCount * 24 * 9)] = 1 - (allCubeVertices[i][j][k] * 1.0f / TOTALSTATES);
+                    space[l * 9 + 8 + + (curCubeCount * 24 * 9)] = 0.8f;
                 }
-
+                curCubeCount++;
 
                 /*if (allCubeVertices[i][j][k].aliveStatus() != 0) {
                     
@@ -315,24 +336,25 @@ void calcBuffers(std::vector<std::vector<unsigned int>> & allIndices,
         }
     }
 
-    allSpaces.push_back(space);
     
     //addBorder(allSpaces[spaceIdx]);
     
-    std::vector<unsigned int> indices;
+    unsigned int * indices = new unsigned int[numAliveCubes * 36];
     // get indcies of aliveCube - iterate every cube
-    for (int i = 0; i < allSpaces[spaceIdx].size() / (24 * 9); i++) {
+    for (int i = 0; i < numAliveCubes; i++) {
         for (int j = 0; j < 36; j++) {
-            indices.push_back(baseIndices[j] + (i * 24)); 
+            indices[j + i * 36] = baseIndices[j] + (i * 24);
         }
     }
 
-    allIndices.push_back(indices);
+    allIndices[spaceIdx] = indices;
     
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
     std::cout << "time in updatebuffer : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+
+    return space;
 }
 
 void calculateNeighbors(int *** allCubeVertices, int *** neighborMap, int i, int j, int k) {
@@ -585,7 +607,7 @@ int main(void)
     }
 
     std::vector<unsigned int> indices;
-    std::vector<std::vector<unsigned int>> allIndices;
+    unsigned int ** allIndices;
     unsigned int baseIndices[] = {
         0, 1, 2, 0, 2, 3,
         4, 5, 6, 4, 6, 7,
@@ -788,16 +810,18 @@ int main(void)
 
     int spaceToRender = 0;
 
-    std::vector<std::vector<float>> allSpaces;
-
-    // cube calculations
     
 
-    int ITERATIONS = 200;
+    // cube calculations
+    std::vector<int> arraySizes;
+
+    int ITERATIONS = 140;
+    float ** allSpaces = new float*[ITERATIONS];
+    allIndices = new unsigned int*[ITERATIONS];
     for (int i = 0; i < ITERATIONS; i++) {
         std::cout << "ITERATION: " << i << std::endl;
         // get usable buffers from allCubeVertices and alive status
-        calcBuffers(allIndices, allCubeVertices, baseIndices, alivePoints, allSpaces, i);
+        allSpaces[i] = calcBuffers(allIndices, allCubeVertices, baseIndices, alivePoints, allSpaces, i, arraySizes);
         
 
         updateCubes(allCubeVertices, alivePoints);
@@ -806,22 +830,31 @@ int main(void)
 
     std::cout << "\n\nDONE LOADING\n";
 
-    std::cout << "index size: " << allIndices[spaceToRender].size() << std::endl;
+    std::cout << "array size: " << arraySizes[spaceToRender] << std::endl;
     
-    for (int i = 0; i < allIndices[spaceToRender].size(); i++) {
+    /*for (int i = 0; i < allIndices[spaceToRender].size(); i++) {
         std::cout << allIndices[spaceToRender][i] << " ";
         if ((i + 1) % 6 == 0) {
             std::cout << std::endl;
         }
-    }
+    }*/
 
     //std::cout << "SIZE: " << allSpaces[spaceToRender].size() << std::endl;
     //std::cout << "gcountL: " << gcountLines << std::endl;
     //std::cout << "gcountC: " << gcountCubes << std::endl;
+
+    /*for (int i = 0; i < arraySizes[spaceToRender]; i++) {
+        std::cout << allSpaces[spaceToRender][i] << " ";
+        if ((i + 1) % 9 == 0) {
+            std::cout << std::endl;
+        }
+    }*/
     
 
     while (!glfwWindowShouldClose(window))
     {
+        auto start = std::chrono::high_resolution_clock::now();
+    
         /* Render here */
         renderer.Clear();
 
@@ -831,21 +864,22 @@ int main(void)
         ImGui::NewFrame();
 
         if (count % 20 == 0) {
-            if (spaceToRender < ITERATIONS - 1)
-            spaceToRender++;
+            
+            //spaceToRender++;
+            if (spaceToRender < ITERATIONS - 1) {
+                spaceToRender++;
+            }
         }
         
         
-        finalVertices = new float[allSpaces[spaceToRender].size()];
-        finalIndices = new unsigned int[allIndices[spaceToRender].size()];
-        std::copy(allIndices[spaceToRender].begin(), allIndices[spaceToRender].end(), finalIndices);
-        std::copy(allSpaces[spaceToRender].begin(), allSpaces[spaceToRender].end(), finalVertices);
 
-        IndexBuffer ib(finalIndices, allIndices[spaceToRender].size());
-        VertexBuffer vb(finalVertices, sizeof(float) * allSpaces[spaceToRender].size());
+        IndexBuffer ib(allIndices[spaceToRender], 36 * arraySizes[spaceToRender] / (24 * 9));
+        std::cout << "BEFOR\n";
+        VertexBuffer vb(allSpaces[spaceToRender], sizeof(float) * arraySizes[spaceToRender]);
+        std::cout << "num floats in buffer: " << arraySizes[spaceToRender] << std::endl;
         va.AddBuffer(vb, layout);
 
-
+        std::cout << "count: " << count << std::endl;
         // Update model matrix for rotati   on
         static float angle = 0.0f;
 
@@ -884,16 +918,22 @@ int main(void)
         shader.SetUniformMat4f("u_MVP", MVP);
         view = glm::lookAt(cameraPos, cameraTarget, up);  // Camera positioned at (5, 0, 5)
         
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        auto elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+        std::cout << "before draw : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
+        start = std::chrono::high_resolution_clock::now();
         // DRAW CALL
         renderer.Draw(va, ib, shader);
 
         
         
-
+        
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         static float f = 0.0f;
         ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-        ImGui::SliderFloat3("Translation", &cameraPos.x, -100.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat3("Translation", &cameraPos.x, -200.0f, 200.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         //ImGui::SliderFloat3("Translationy", &translation.y, -10.0f, 10.0f); 
         //ImGui::SliderFloat3("Translationz", &translation.z, -10.0f, 10.0f); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
@@ -909,12 +949,7 @@ int main(void)
         
 
 
-        if (r > 1.0f) {
-            increment = -0.003f;
-        } else if (r < 0.0f) {
-            increment = 0.003f;
-        }
-        r += increment;
+       
 
 
 
@@ -926,12 +961,25 @@ int main(void)
         GLCall(glfwSwapBuffers(window));
 
         count++;
-        delete finalVertices;
-        delete finalIndices;
-
+        
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_seconds);
+        std::cout << "after draw : " << elapsed_milliseconds.count() << " milliseconds" << std::endl;
         /* Poll for and process events */
         GLCall(glfwPollEvents());
     }
+
+    for (int i = 0; i < ITERATIONS; i++) {
+        delete[] allSpaces[i];
+    }
+    delete[] allSpaces;
+
+    for (int i = 0; i < ITERATIONS; i++) {
+        delete[] allIndices[i];
+    }
+    delete[] allIndices;
+
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
